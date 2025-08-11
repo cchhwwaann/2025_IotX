@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hand Control GUI</title>
+    <style>
+    body { display: flex; justify-content: space-around; align-items: center; height: 100vh; margin: 0; }
+    .button {
+        width: 30%;
+        height: 80%;
+        font-size: 3em;
+        border: 5px solid gray;
+        background-color: lightgray;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: transform 0.3s ease-in-out;  /* 크기 변화에 애니메이션 효과 추가 */
+    }
+    .highlight-1, .highlight-2, .highlight-3 {
+        transform: scale(1.05); /* 버튼 크기를 105%로 확대 */
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.3); /* 그림자 효과 추가 */
+    }
+    .highlight-1 { border-color: green; background-color: lightgreen; }
+    .highlight-2 { border-color: yellow; background-color: lightyellow; }
+    .highlight-3 { border-color: red; background-color: lightcoral; }
+</style>
+</head>
+<body>
+    <div id="zone-1" class="button">ZONE 1</div>
+    <div id="zone-2" class="button">ZONE 2</div>
+    <div id="zone-3" class="button">ZONE 3</div>
+
+    <script>
+        function updateGUI() {
+            // 서버로부터 현재 zone 값을 받아오는 API 호출
+            fetch('/get_zone')
+                .then(response => response.json())
+                .then(data => {
+                    const zone = data.zone;
+                    document.querySelectorAll('.button').forEach(btn => btn.className = 'button');
+                    if (zone > 0) {
+                        const targetButton = document.getElementById('zone-' + zone);
+                        if (targetButton) {
+                            targetButton.classList.add('highlight-' + zone);
+                        }
+                    }
+                });
+        }
+        setInterval(updateGUI, 100); // 0.1초마다 GUI를 업데이트합니다.
+    </script>
+</body>
+</html>
