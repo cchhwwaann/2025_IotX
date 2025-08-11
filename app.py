@@ -1,8 +1,12 @@
 # app.py
 from flask import Flask, request, render_template, jsonify
+import logging
 
 app = Flask(__name__)
 current_zone = 0
+
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
 
 @app.route('/command', methods=['POST'])
 def handle_command():
@@ -34,4 +38,9 @@ def get_zone():
     return jsonify({'zone': current_zone})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True, threaded=True)
+    # Flask 서버 주소를 명시적으로 출력
+    print("* Serving Flask app 'app'")
+    print("* Debug mode: off")
+    print("* Running on http://127.0.0.1:5000")
+    
+    app.run(host='0.0.0.0', port=5000, debug=False, threaded=True)

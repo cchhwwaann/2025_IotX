@@ -1,51 +1,125 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>Hand Control GUI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
     <style>
-    body { display: flex; justify-content: space-around; align-items: center; height: 100vh; margin: 0; }
-    .button {
-        width: 30%;
-        height: 80%;
-        font-size: 3em;
-        border: 5px solid gray;
-        background-color: lightgray;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        transition: transform 0.3s ease-in-out;  /* 크기 변화에 애니메이션 효과 추가 */
-    }
-    .highlight-1, .highlight-2, .highlight-3 {
-        transform: scale(1.05); /* 버튼 크기를 105%로 확대 */
-        box-shadow: 0 0 15px rgba(0, 0, 0, 0.3); /* 그림자 효과 추가 */
-    }
-    .highlight-1 { border-color: green; background-color: lightgreen; }
-    .highlight-2 { border-color: yellow; background-color: lightyellow; }
-    .highlight-3 { border-color: red; background-color: lightcoral; }
-</style>
-</head>
-<body>
-    <div id="zone-1" class="button">ZONE 1</div>
-    <div id="zone-2" class="button">ZONE 2</div>
-    <div id="zone-3" class="button">ZONE 3</div>
-
-    <script>
-        function updateGUI() {
-            // 서버로부터 현재 zone 값을 받아오는 API 호출
-            fetch('/get_zone')
-                .then(response => response.json())
-                .then(data => {
-                    const zone = data.zone;
-                    document.querySelectorAll('.button').forEach(btn => btn.className = 'button');
-                    if (zone > 0) {
-                        const targetButton = document.getElementById('zone-' + zone);
-                        if (targetButton) {
-                            targetButton.classList.add('highlight-' + zone);
-                        }
-                    }
-                });
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
         }
-        setInterval(updateGUI, 100); // 0.1초마다 GUI를 업데이트합니다.
-    </script>
+        .btn-room, .btn-control {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .btn-room:hover, .btn-room.active {
+            transform: scale(1.05);
+        }
+        .btn-control.highlight-active {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px 10px rgba(0, 255, 0, 0.7);
+            border: 4px solid green;
+        }
+        .active-room {
+            background-color: rgb(59, 130, 246);
+            color: white;
+        }
+        .control-panel-grid {
+            height: 100%;
+        }
+        .btn-control {
+            height: 100%;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+<div class="w-full p-8 h-full flex flex-col justify-between">
+    <div class="flex justify-center space-x-4 mb-8">
+        <button class="btn-room bg-white text-gray-700 font-semibold py-3 px-12 rounded-lg shadow-md active-room" id="room-living">거실</button>
+        <button class="btn-room bg-white text-gray-700 font-semibold py-3 px-12 rounded-lg shadow-md" id="room-bathroom">화장실</button>
+        <button class="btn-room bg-white text-gray-700 font-semibold py-3 px-12 rounded-lg shadow-md" id="room-kitchen">부엌</button>
+    </div>
+    <div class="bg-white rounded-2xl shadow-lg p-8 flex-grow flex flex-col">
+        <h2 class="text-2xl font-bold text-center text-gray-800 mb-8" id="control-panel-title">거실 제어 패널</h2>
+        <div class="control-panel-grid grid grid-cols-3 gap-6 w-full flex-grow">
+            </div>
+    </div>
+</div>
+<script>
+    const roomButtons = document.querySelectorAll('.btn-room');
+    const controlPanelTitle = document.getElementById('control-panel-title');
+    const controlPanelGrid = document.querySelector('.control-panel-grid');
+
+    const controlButtonsData = [
+        { id: 'zone-1', icon: 'lightbulb', name: '조명 제어', color: 'bg-yellow-500' },
+        { id: 'zone-2', icon: 'tv', name: 'TV 제어', color: 'bg-blue-500' },
+        { id: 'zone-3', icon: 'thermostat', name: '에어컨 제어', color: 'bg-teal-400' },
+        { id: 'zone-4', icon: 'shower', name: '온수 제어', color: 'bg-blue-500' },
+        { id: 'zone-5', icon: 'vent', name: '환풍기 제어', color: 'bg-gray-500' },
+        { id: 'zone-6', icon: 'soup_kitchen', name: '인덕션', color: 'bg-red-500' }
+    ];
+
+    const rooms = {
+        'room-living': [controlButtonsData[0], controlButtonsData[1], controlButtonsData[2]],
+        'room-bathroom': [controlButtonsData[3], controlButtonsData[4], controlButtonsData[0]],
+        'room-kitchen': [controlButtonsData[0], controlButtonsData[4], controlButtonsData[5]]
+    };
+    
+    function renderControlButtons(roomId) {
+        controlPanelGrid.innerHTML = '';
+        const buttons = rooms[roomId];
+        buttons.forEach(buttonData => {
+            const button = document.createElement('button');
+            button.className = `btn-control flex flex-col items-center justify-center ${buttonData.color} text-white rounded-2xl p-6 shadow-md`;
+            button.id = buttonData.id;
+            button.innerHTML = `
+                <span class="material-icons text-4xl mb-2">${buttonData.icon}</span>
+                <span class="font-semibold text-2xl">${buttonData.name}</span>
+            `;
+            controlPanelGrid.appendChild(button);
+        });
+        
+        document.querySelectorAll('.btn-control').forEach(btn => {
+            btn.addEventListener('click', () => {
+                console.log(`${btn.textContent.trim()} button clicked`);
+            });
+        });
+    }
+
+    function updateControlButtons() {
+        fetch('/get_zone')
+            .then(response => response.json())
+            .then(data => {
+                const zone = data.zone;
+
+                const currentButtons = document.querySelectorAll('.btn-control');
+                currentButtons.forEach(btn => btn.classList.remove('highlight-active'));
+                
+                if (zone > 0 && zone <= currentButtons.length) {
+                    currentButtons[zone - 1].classList.add('highlight-active');
+                }
+            });
+    }
+
+    setInterval(updateControlButtons, 100);
+
+    roomButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            roomButtons.forEach(btn => {
+                btn.classList.remove('active-room', 'bg-blue-500', 'text-white');
+                btn.classList.add('bg-white', 'text-gray-700');
+            });
+            button.classList.add('active-room', 'bg-blue-500', 'text-white');
+            button.classList.remove('bg-white', 'text-gray-700');
+            const roomName = button.textContent;
+            controlPanelTitle.textContent = `${roomName} 제어 패널`;
+            renderControlButtons(button.id);
+        });
+    });
+
+    renderControlButtons('room-living');
+</script>
 </body>
 </html>

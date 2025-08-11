@@ -2,12 +2,11 @@
 import time
 import threading
 import subprocess
-import os
 
 # Flask 서버를 실행하는 함수
 def run_flask():
     # 'app.py'를 별도의 프로세스로 실행
-    # stdout과 stderr 옵션을 제거하여 로그가 터미널에 출력되도록 함
+    # 로그가 출력되도록 stdout과 stderr 옵션을 제거함
     subprocess.run(["python", "app.py"])
 
 # 손 인식기를 실행하는 함수
@@ -29,7 +28,7 @@ if __name__ == "__main__":
     hand_thread.daemon = True
     hand_thread.start()
 
-    # 메인 스레드는 계속 실행되도록 유지
+    # 메인 스레드는 계속 실행되도록 유지 (스레드가 종료되지 않게 함)
     try:
         while True:
             time.sleep(1)

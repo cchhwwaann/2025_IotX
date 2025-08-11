@@ -10,7 +10,7 @@ def start_hand_detection():
     손 인식을 시작하고 Flask 서버로 zone 값을 전송하는 함수
     """
     mp_hands = mp.solutions.hands
-    hands = mp_hands.Hands(max_num_hands=1)
+    hands = mp_hands.Hands(max_num_hands=2) # 두 손까지 인식하도록 설정
     cap = cv2.VideoCapture(0)
     screen_width, _ = pyautogui.size()
     
@@ -30,10 +30,30 @@ def start_hand_detection():
         results = hands.process(image_rgb)
         
         zone = 0
+        
+        # ###################### 수정된 로직: 가장 큰 손 선택 ######################
         if results.multi_hand_landmarks:
+            largest_hand_landmarks = None
+            max_hand_area = 0
+
+            # 감지된 모든 손을 순회하며 가장 큰 손 찾기
             for hand_landmarks in results.multi_hand_landmarks:
-                index_mcp = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_MCP]
-                pinky_mcp = hand_landmarks.landmark[mp_hands.HandLandmark.PINKY_MCP]
+                # 손 랜드마크의 x, y 좌표 범위를 계산하여 손의 크기(면적) 추정
+                x_coords = [landmark.x for landmark in hand_landmarks.landmark]
+                y_coords = [landmark.y for landmark in hand_landmarks.landmark]
+                
+                hand_width = max(x_coords) - min(x_coords)
+                hand_height = max(y_coords) - min(y_coords)
+                hand_area = hand_width * hand_height
+
+                if hand_area > max_hand_area:
+                    max_hand_area = hand_area
+                    largest_hand_landmarks = hand_landmarks
+            
+            # 가장 큰 손의 좌표를 사용해 zone 계산
+            if largest_hand_landmarks:
+                index_mcp = largest_hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_MCP]
+                pinky_mcp = largest_hand_landmarks.landmark[mp_hands.HandLandmark.PINKY_MCP]
                 palm_center_x = (index_mcp.x + pinky_mcp.x) / 2
                 x_screen = int(palm_center_x * screen_width)
                 
@@ -43,6 +63,7 @@ def start_hand_detection():
                     zone = 2
                 else:
                     zone = 3
+        # ##########################################################################
         
         # zone 값이 이전과 달라졌을 때만 서버에 POST 요청
         if zone != prev_zone:
@@ -50,11 +71,9 @@ def start_hand_detection():
                 data = {"zone": zone}
                 requests.post(server_url, json=data)
             except requests.exceptions.ConnectionError:
-                # 서버 연결 오류 발생 시에도 터미널에 메시지를 출력하지 않음
                 pass
             prev_zone = zone
             
-        # CPU 사용량을 줄이기 위한 작은 딜레이
         time.sleep(0.01)
 
     cap.release()
