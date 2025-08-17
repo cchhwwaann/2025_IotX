@@ -12,7 +12,7 @@
             font-family: 'Noto Sans KR', sans-serif;
         }
         .btn-room, .btn-control {
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, border 0.2s ease-in-out;
         }
         .btn-room:hover, .btn-room.active {
             transform: scale(1.05);
@@ -22,19 +22,29 @@
             box-shadow: 0 0 30px 10px rgba(0, 255, 0, 0.7);
             border: 4px solid green;
         }
+        .btn-control.click-active {
+            transform: scale(0.85);
+            box-shadow: 0 0 5px 2px rgba(0, 255, 0, 0.9);
+            border: 2px solid green;
+        }
         .active-room {
             background-color: rgb(59, 130, 246);
             color: white;
         }
-        .control-panel-grid {
+        #click-flash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
             height: 100%;
-        }
-        .btn-control {
-            height: 100%;
+            background-color: rgba(74, 222, 128, 0);
+            pointer-events: none;
+            transition: background-color 0.1s ease-out;
         }
     </style>
 </head>
 <body class="bg-gray-100 flex items-center justify-center h-screen">
+<div id="click-flash"></div>
 <div class="w-full p-8 h-full flex flex-col justify-between">
     <div class="flex justify-center space-x-4 mb-8">
         <button class="btn-room bg-white text-gray-700 font-semibold py-3 px-12 rounded-lg shadow-md active-room" id="room-living">거실</button>
@@ -94,16 +104,45 @@
             .then(data => {
                 const zone = data.zone;
 
-                const currentButtons = document.querySelectorAll('.btn-control');
-                currentButtons.forEach(btn => btn.classList.remove('highlight-active'));
+                document.querySelectorAll('.btn-control').forEach(btn => btn.classList.remove('highlight-active'));
                 
-                if (zone > 0 && zone <= currentButtons.length) {
-                    currentButtons[zone - 1].classList.add('highlight-active');
+                if (zone > 0) {
+                    const activeButtons = document.querySelectorAll('.btn-control');
+                    if (zone <= activeButtons.length) {
+                        activeButtons[zone - 1].classList.add('highlight-active');
+                    }
+                }
+            });
+    }
+    
+    function handleButtonClick(zoneId) {
+        const targetButton = document.getElementById(zoneId);
+        if (targetButton) {
+            targetButton.classList.add('click-active');
+            setTimeout(() => {
+                targetButton.classList.remove('click-active');
+            }, 100);
+            
+            // 디버깅용: 클릭이 감지되었을 때 콘솔에 로그 출력
+            console.log("클릭 시각적 효과 함수 실행! 버튼:", zoneId);
+        }
+    }
+
+    function updateClickStatus() {
+        fetch('/get_click')
+            .then(response => response.json())
+            .then(data => {
+                // 디버깅용: 서버로부터 받은 클릭 데이터 로그
+                console.log("서버로부터 클릭 데이터 수신:", data);
+                const clickedZone = data.zone;
+                if (clickedZone > 0) {
+                    handleButtonClick('zone-' + clickedZone);
                 }
             });
     }
 
     setInterval(updateControlButtons, 100);
+    setInterval(updateClickStatus, 100);
 
     roomButtons.forEach(button => {
         button.addEventListener('click', () => {
@@ -116,6 +155,12 @@
             const roomName = button.textContent;
             controlPanelTitle.textContent = `${roomName} 제어 패널`;
             renderControlButtons(button.id);
+        });
+    });
+
+    document.querySelectorAll('.btn-control').forEach(btn => {
+        btn.addEventListener('click', () => {
+            console.log(`${btn.textContent.trim()} button clicked`);
         });
     });
 
