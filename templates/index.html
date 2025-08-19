@@ -11,18 +11,18 @@
         body {
             font-family: 'Noto Sans KR', sans-serif;
         }
-        .btn-room, .btn-control {
+        .btn-room, .btn-control, .btn-action {
             transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, border 0.2s ease-in-out;
         }
         .btn-room:hover, .btn-room.active {
             transform: scale(1.05);
         }
-        .btn-control.highlight-active {
+        .btn-control.highlight-active, .btn-action.highlight-active {
             transform: scale(1.05);
             box-shadow: 0 0 30px 10px rgba(0, 255, 0, 0.7);
             border: 4px solid green;
         }
-        .btn-control.click-active {
+        .btn-control.click-active, .btn-action.click-active {
             transform: scale(0.85);
             box-shadow: 0 0 5px 2px rgba(0, 255, 0, 0.9);
             border: 2px solid green;
@@ -54,29 +54,48 @@
     <div class="bg-white rounded-2xl shadow-lg p-8 flex-grow flex flex-col">
         <h2 class="text-2xl font-bold text-center text-gray-800 mb-8" id="control-panel-title">거실 제어 패널</h2>
         <div class="control-panel-grid grid grid-cols-3 gap-6 w-full flex-grow">
-            </div>
+        </div>
+        <div class="action-panel-grid grid grid-cols-3 gap-6 w-full flex-grow hidden">
+            <button id="action-on" class="btn-action bg-green-500 text-white rounded-2xl p-6 shadow-md flex flex-col items-center justify-center">
+                <span class="material-icons text-4xl mb-2">power_settings_new</span>
+                <span class="font-semibold text-2xl">ON</span>
+            </button>
+            <button id="action-off" class="btn-action bg-red-500 text-white rounded-2xl p-6 shadow-md flex flex-col items-center justify-center">
+                <span class="material-icons text-4xl mb-2">highlight_off</span>
+                <span class="font-semibold text-2xl">OFF</span>
+            </button>
+            <button id="action-back" class="btn-action bg-gray-500 text-white rounded-2xl p-6 shadow-md flex flex-col items-center justify-center">
+                <span class="material-icons text-4xl mb-2">arrow_back</span>
+                <span class="font-semibold text-2xl">뒤로가기</span>
+            </button>
+        </div>
     </div>
 </div>
 <script>
     const roomButtons = document.querySelectorAll('.btn-room');
     const controlPanelTitle = document.getElementById('control-panel-title');
     const controlPanelGrid = document.querySelector('.control-panel-grid');
+    const actionPanelGrid = document.querySelector('.action-panel-grid');
+    let activeControlId = null;
+    let activeRoomId = 'room-living';
 
     const controlButtonsData = [
-        { id: 'zone-1', icon: 'lightbulb', name: '조명 제어', color: 'bg-yellow-500' },
-        { id: 'zone-2', icon: 'tv', name: 'TV 제어', color: 'bg-blue-500' },
-        { id: 'zone-3', icon: 'thermostat', name: '에어컨 제어', color: 'bg-teal-400' },
-        { id: 'zone-4', icon: 'shower', name: '온수 제어', color: 'bg-blue-500' },
-        { id: 'zone-5', icon: 'vent', name: '환풍기 제어', color: 'bg-gray-500' },
-        { id: 'zone-6', icon: 'soup_kitchen', name: '인덕션', color: 'bg-red-500' }
+        { id: 'living-light', icon: 'lightbulb', name: '조명 제어', color: 'bg-yellow-500' },
+        { id: 'living-tv', icon: 'tv', name: 'TV 제어', color: 'bg-blue-500' },
+        { id: 'living-ac', icon: 'thermostat', name: '에어컨 제어', color: 'bg-teal-400' },
+        { id: 'bathroom-water', icon: 'shower', name: '온수 제어', color: 'bg-blue-500' },
+        { id: 'bathroom-vent', icon: 'air', name: '환풍기 제어', color: 'bg-gray-500' },
+        { id: 'kitchen-light', icon: 'lightbulb', name: '조명 제어', color: 'bg-yellow-500' },
+        { id: 'kitchen-vent', icon: 'air', name: '환풍기 제어', color: 'bg-gray-500' },
+        { id: 'kitchen-stove', icon: 'soup_kitchen', name: '인덕션', color: 'bg-red-500' }
     ];
 
     const rooms = {
         'room-living': [controlButtonsData[0], controlButtonsData[1], controlButtonsData[2]],
         'room-bathroom': [controlButtonsData[3], controlButtonsData[4], controlButtonsData[0]],
-        'room-kitchen': [controlButtonsData[0], controlButtonsData[4], controlButtonsData[5]]
+        'room-kitchen': [controlButtonsData[5], controlButtonsData[6], controlButtonsData[7]]
     };
-    
+
     function renderControlButtons(roomId) {
         controlPanelGrid.innerHTML = '';
         const buttons = rooms[roomId];
@@ -105,9 +124,12 @@
                 const zone = data.zone;
 
                 document.querySelectorAll('.btn-control').forEach(btn => btn.classList.remove('highlight-active'));
+                document.querySelectorAll('.btn-action').forEach(btn => btn.classList.remove('highlight-active'));
                 
                 if (zone > 0) {
-                    const activeButtons = document.querySelectorAll('.btn-control');
+                    const activePanel = controlPanelGrid.classList.contains('hidden') ? actionPanelGrid : controlPanelGrid;
+                    const activeButtons = activePanel.querySelectorAll('button');
+                    
                     if (zone <= activeButtons.length) {
                         activeButtons[zone - 1].classList.add('highlight-active');
                     }
@@ -115,6 +137,21 @@
             });
     }
     
+    function showActionPanel() {
+        controlPanelGrid.classList.add('hidden');
+        actionPanelGrid.classList.remove('hidden');
+        controlPanelTitle.textContent = '제어 모드';
+    }
+
+    function showControlPanel() {
+        controlPanelGrid.classList.remove('hidden');
+        actionPanelGrid.classList.add('hidden');
+        const activeRoomButton = document.querySelector('.btn-room.active-room');
+        if (activeRoomButton) {
+            controlPanelTitle.textContent = `${activeRoomButton.textContent} 제어 패널`;
+        }
+    }
+
     function handleButtonClick(zoneId) {
         const targetButton = document.getElementById(zoneId);
         if (targetButton) {
@@ -123,20 +160,57 @@
                 targetButton.classList.remove('click-active');
             }, 100);
             
-            // 디버깅용: 클릭이 감지되었을 때 콘솔에 로그 출력
-            console.log("클릭 시각적 효과 함수 실행! 버튼:", zoneId);
+            if (targetButton.classList.contains('btn-control')) {
+                activeControlId = zoneId;
+                showActionPanel();
+            } else if (targetButton.id === 'action-on') {
+                fetch('/control', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        room_id: activeRoomId,
+                        control_id: activeControlId,
+                        action: 'on'
+                    })
+                });
+            } else if (targetButton.id === 'action-off') {
+                fetch('/control', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        room_id: activeRoomId,
+                        control_id: activeControlId,
+                        action: 'off'
+                    })
+                });
+            } else if (targetButton.id === 'action-back') {
+                showControlPanel();
+            }
         }
     }
-
+    
     function updateClickStatus() {
         fetch('/get_click')
             .then(response => response.json())
             .then(data => {
-                // 디버깅용: 서버로부터 받은 클릭 데이터 로그
-                console.log("서버로부터 클릭 데이터 수신:", data);
                 const clickedZone = data.zone;
                 if (clickedZone > 0) {
-                    handleButtonClick('zone-' + clickedZone);
+                    let targetButton = null;
+                    if (!controlPanelGrid.classList.contains('hidden')) {
+                        const activeButtons = document.querySelectorAll('.btn-control');
+                        if (clickedZone <= activeButtons.length) {
+                            targetButton = activeButtons[clickedZone - 1];
+                        }
+                    } else {
+                        const activeButtons = document.querySelectorAll('.btn-action');
+                        if (clickedZone <= activeButtons.length) {
+                            targetButton = activeButtons[clickedZone - 1];
+                        }
+                    }
+                    
+                    if (targetButton) {
+                        handleButtonClick(targetButton.id);
+                    }
                 }
             });
     }
@@ -152,19 +226,16 @@
             });
             button.classList.add('active-room', 'bg-blue-500', 'text-white');
             button.classList.remove('bg-white', 'text-gray-700');
+            activeRoomId = button.id;
             const roomName = button.textContent;
             controlPanelTitle.textContent = `${roomName} 제어 패널`;
             renderControlButtons(button.id);
-        });
-    });
-
-    document.querySelectorAll('.btn-control').forEach(btn => {
-        btn.addEventListener('click', () => {
-            console.log(`${btn.textContent.trim()} button clicked`);
+            showControlPanel();
         });
     });
 
     renderControlButtons('room-living');
+    showControlPanel();
 </script>
 </body>
 </html>

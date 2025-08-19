@@ -15,7 +15,6 @@ def start_hand_detection():
     server_url_click = "http://127.0.0.1:5000/click"
     active_zone = 0
     
-    # 핀치 제스처의 시작과 끝을 감지하기 위한 플래그
     is_pinching_started = False
     
     while cap.isOpened():
@@ -51,20 +50,17 @@ def start_hand_detection():
             else:
                 current_zone = 3
         
-        # '집었다가 놓는' 클릭 감지 로직
         if is_pinching_this_frame:
-            # 핀치 제스처가 시작되었음을 기록
             if not is_pinching_started:
                 is_pinching_started = True
         else:
-            # 핀치 제스처가 해제되었을 때 (놓았을 때) 클릭 이벤트 발생
             if is_pinching_started:
                 try:
                     data = {"zone": active_zone}
                     requests.post(server_url_click, json=data)
                 except requests.exceptions.ConnectionError:
                     pass
-                is_pinching_started = False # 상태 초기화
+                is_pinching_started = False
         
         if current_zone != active_zone:
             try:
@@ -76,4 +72,4 @@ def start_hand_detection():
             
         time.sleep(0.01)
 
-    cap.release()   
+    cap.release()

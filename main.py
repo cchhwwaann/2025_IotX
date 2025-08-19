@@ -3,13 +3,12 @@ import time
 import threading
 import subprocess
 
-# Flask 서버를 실행하는 함수
+# Flask 서버 실행
 def run_flask():
     # 'app.py'를 별도의 프로세스로 실행
-    # 로그가 출력되도록 stdout과 stderr 옵션을 제거함
     subprocess.run(["python", "app.py"])
 
-# 손 인식기를 실행하는 함수
+# hand_detector 실행 함수
 def run_hand_detector():
     from hand_detector import start_hand_detection
     start_hand_detection()
@@ -20,10 +19,10 @@ if __name__ == "__main__":
     flask_thread.daemon = True
     flask_thread.start()
 
-    # Flask 서버가 시작될 시간을 잠시 기다림 (매우 중요)
+    # Flask 서버가 시작될 시간 대기 (매우 중요)
     time.sleep(2)
 
-    # 손 인식기 스레드 시작
+    # hand_detector 스레드 시작
     hand_thread = threading.Thread(target=run_hand_detector)
     hand_thread.daemon = True
     hand_thread.start()
