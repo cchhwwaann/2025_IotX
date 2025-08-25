@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Cooking Assistant</title>
+    <title>Timer</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <style>
         body {
@@ -9,26 +9,33 @@
             margin: 0;
             background-color: #f0f0f0;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
             position: relative;
+            gap: 20px;
         }
         
-        #main-container {
+        #timer-display {
+            font-size: 100px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .button-group {
             display: flex;
             gap: 20px;
-            padding: 20px;
-            box-sizing: border-box;
+            flex-wrap: wrap;
+            justify-content: center;
             width: 100%;
-            max-width: 1000px;
         }
-        
+
         .main-button {
-            flex-grow: 1;
-            height: 250px;
+            width: 150px;
+            height: 150px;
             border-radius: 15px;
-            font-size: 24px;
+            font-size: 20px;
             font-weight: bold;
             display: flex;
             justify-content: center;
@@ -55,9 +62,14 @@
             100% { transform: scale(1.05); }
         }
         
-        #youtube { background-color: #e62117; }
-        #recipebook { background-color: #4CAF50; }
-        #timer { background-color: #2196F3; }
+        #set_30s { background-color: #ff5722; }
+        #set_1m { background-color: #4CAF50; }
+        #set_5m { background-color: #2196F3; }
+        #set_10m { background-color: #9C27B0; }
+        
+        #start { background-color: #4CAF50; }
+        #stop { background-color: #f44336; }
+        #reset { background-color: #2196F3; }
         
         #back {
             position: absolute;
@@ -85,10 +97,17 @@
     </style>
 </head>
 <body>
-    <div id="main-container">
-        <div id="youtube" class="main-button">YouTube</div>
-        <div id="recipebook" class="main-button">Recipe Book</div>
-        <div id="timer" class="main-button">Timer</div>
+    <div id="timer-display">00:00</div>
+    <div class="button-group">
+        <div id="set_30s" class="main-button">30초</div>
+        <div id="set_1m" class="main-button">1분</div>
+        <div id="set_5m" class="main-button">5분</div>
+        <div id="set_10m" class="main-button">10분</div>
+    </div>
+    <div class="button-group">
+        <div id="start" class="main-button">Start</div>
+        <div id="stop" class="main-button">Stop</div>
+        <div id="reset" class="main-button">Reset</div>
     </div>
     
     <div id="back" class="main-button">Back</div>
@@ -96,6 +115,12 @@
     <script>
         const socket = io();
         let currentHighlightedButton = null;
+
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+        }
 
         window.onload = function() {
             const buttons = document.querySelectorAll('.main-button');
@@ -135,19 +160,26 @@
                 targetBtn.addEventListener('animationend', () => {
                     targetBtn.classList.remove('click-animation');
                     console.log(`CLICKED: ${btnName}`);
-                    
-                    if (btnName === 'youtube') {
-                        console.log("YouTube 페이지로 이동");
-                    } else if (btnName === 'recipebook') {
-                        window.location.href = '/recipebook';
-                    } else if (btnName === 'timer') {
-                        window.location.href = '/timer';
+
+                    if (btnName.startsWith('set_')) {
+                         socket.emit('timer_action', { action: btnName });
+                    } else if (btnName === 'start' || btnName === 'stop' || btnName === 'reset') {
+                        socket.emit('timer_action', { action: btnName });
                     } else if (btnName === 'back') {
                         console.log("뒤로가기 실행");
                         window.history.back();
                     }
                 }, { once: true });
             }
+        });
+
+        socket.on('timer_update', function(data) {
+            const timeLeft = data.time_left;
+            document.getElementById('timer-display').textContent = formatTime(timeLeft);
+        });
+
+        socket.on('timer_end', function(data) {
+            alert(data.message);
         });
     </script>
 </body>
