@@ -43,19 +43,28 @@ try:
         # 인식 결과가 있다면
         if results.multi_hand_landmarks:
             for hand_landmarks in results.multi_hand_landmarks:
-                # 검지 끝(랜드마크 8번)의 좌표 추출
+                # 엄지 끝(랜드마크 4번)과 검지 끝(랜드마크 8번)의 좌표 추출
+                thumb_tip = hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_TIP]
                 index_finger_tip = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP]
                 
                 # 좌표를 0.0 ~ 1.0 사이의 정규화된 값으로 전송
-                x_normalized = index_finger_tip.x
-                y_normalized = index_finger_tip.y
+                thumb_x_normalized = thumb_tip.x
+                thumb_y_normalized = thumb_tip.y
+                index_x_normalized = index_finger_tip.x
+                index_y_normalized = index_finger_tip.y
                 
                 # 좌표 출력 (디버깅용)
-                print(f"정규화된 검지 끝 좌표: ({x_normalized:.2f}, {y_normalized:.2f})")
+                print(f"엄지 끝 좌표: ({thumb_x_normalized:.2f}, {thumb_y_normalized:.2f})")
+                print(f"검지 끝 좌표: ({index_x_normalized:.2f}, {index_y_normalized:.2f})")
 
-                # Flask 서버로 좌표 전송
+                # Flask 서버로 두 손가락의 좌표 전송
                 try:
-                    data = {'x': x_normalized, 'y': y_normalized}
+                    data = {
+                        'thumb_x': thumb_x_normalized, 
+                        'thumb_y': thumb_y_normalized,
+                        'index_x': index_x_normalized,
+                        'index_y': index_y_normalized
+                    }
                     response = requests.post(flask_server_url, json=data, timeout=0.001)
                 except requests.exceptions.RequestException as e:
                     # 서버 연결 오류나 타임아웃 발생 시
@@ -64,7 +73,15 @@ try:
                 # 화면에 랜드마크와 연결 선 그리기
                 mp_draw.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
         else:
-            # 손을 인식하지 못했을 때 메시지 출력 (디버깅용)
+            # 손을 인식하지 못했을 때 좌표를 0으로 보내어 UI 초기화
+            try:
+                data = {
+                    'thumb_x': 0, 'thumb_y': 0,
+                    'index_x': 0, 'index_y': 0
+                }
+                response = requests.post(flask_server_url, json=data, timeout=0.001)
+            except requests.exceptions.RequestException as e:
+                pass
             print("손을 인식하지 못했습니다.")
                 
         # 화면에 프레임 보여주기

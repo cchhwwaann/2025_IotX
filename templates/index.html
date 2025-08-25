@@ -117,8 +117,17 @@
         const toggleButton = document.getElementById('toggle-button');
         
         // ---- 손 인식 및 버튼 선택 관련 변수 및 함수 ----
-        let handCoordinates = {x: 0, y: 0};
+        let handCoordinates = {
+            thumb_x: 0,
+            thumb_y: 0,
+            index_x: 0,
+            index_y: 0
+        };
         const fingerIndicator = document.getElementById('finger-indicator');
+        
+        // 클릭 상태를 저장할 변수들
+        let isPinching = false;
+        const pinchThreshold = 0.05; // 핀치 인식 임계값 (0.0에서 1.0 사이의 정규화된 값)
 
         setInterval(fetchAndCheckHandPosition, 50);
 
@@ -129,20 +138,32 @@
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json();
-                handCoordinates = {
-                    x: data.x * window.innerWidth,
-                    y: data.y * window.innerHeight
-                };
+                
+                // 새로운 좌표 체계에 맞게 handCoordinates 업데이트
+                handCoordinates.thumb_x = data.thumb_x;
+                handCoordinates.thumb_y = data.thumb_y;
+                handCoordinates.index_x = data.index_x;
+                handCoordinates.index_y = data.index_y;
+                
                 checkHandPosition();
+
+                // 클릭 감지 로직 호출
+                checkPinchClick();
+
             } catch (e) {
-                console.log("Failed to fetch coordinates:", e);
-                handCoordinates = {x: 0, y: 0};
+                console.error("Failed to fetch coordinates:", e);
+                // 오류 발생 시 좌표를 0으로 초기화
+                handCoordinates.thumb_x = 0;
+                handCoordinates.thumb_y = 0;
+                handCoordinates.index_x = 0;
+                handCoordinates.index_y = 0;
                 checkHandPosition();
             }
         }
         
         function checkHandPosition() {
-            if (handCoordinates.x === 0 && handCoordinates.y === 0) {
+            // 엄지 좌표를 기준으로 포인터 표시
+            if (handCoordinates.thumb_x === 0 && handCoordinates.thumb_y === 0) {
                 const allButtons = document.querySelectorAll('.action-button, .timer-button, .timer-preset-button, .recipe-button');
                 allButtons.forEach(button => {
                     button.classList.remove('selected');
@@ -155,8 +176,9 @@
             if (!activePage) return;
 
             fingerIndicator.style.display = 'block';
-            fingerIndicator.style.left = `${handCoordinates.x}px`;
-            fingerIndicator.style.top = `${handCoordinates.y}px`;
+            // 엄지 좌표를 화면 픽셀 좌표로 변환하여 포인터 위치 설정
+            fingerIndicator.style.left = `${handCoordinates.thumb_x * window.innerWidth}px`;
+            fingerIndicator.style.top = `${handCoordinates.thumb_y * window.innerHeight}px`;
 
             const allButtons = document.querySelectorAll('.action-button, .timer-button, .timer-preset-button, .recipe-button');
             allButtons.forEach(button => {
@@ -181,14 +203,18 @@
             
             let closestButton = null;
             let minDistance = Infinity;
+            
+            // 엄지 좌표를 기준으로 가장 가까운 버튼 찾기
+            const handX = handCoordinates.thumb_x * window.innerWidth;
+            const handY = handCoordinates.thumb_y * window.innerHeight;
 
             buttons.forEach(button => {
                 const rect = button.getBoundingClientRect();
                 const buttonCenterX = rect.left + rect.width / 2;
                 const buttonCenterY = rect.top + rect.height / 2;
                 
-                const dx = handCoordinates.x - buttonCenterX;
-                const dy = handCoordinates.y - buttonCenterY;
+                const dx = handX - buttonCenterX;
+                const dy = handY - buttonCenterY;
                 const distance = Math.sqrt(dx * dx + dy * dy);
                 
                 if (distance < minDistance) {
@@ -201,7 +227,36 @@
                 closestButton.classList.add('selected');
             }
         }
+        
+        function checkPinchClick() {
+            // 손 좌표가 유효하지 않으면 핀치 상태 초기화
+            if (handCoordinates.thumb_x === 0 && handCoordinates.thumb_y === 0) {
+                isPinching = false;
+                return;
+            }
 
+            // 엄지(thumb)와 검지(index) 사이의 유클리드 거리 계산 (정규화된 좌표 기준)
+            const dx = handCoordinates.thumb_x - handCoordinates.index_x;
+            const dy = handCoordinates.thumb_y - handCoordinates.index_y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            const selectedButton = document.querySelector('.selected');
+            
+            if (distance < pinchThreshold) {
+                // 손가락이 닿았을 때 (핀치 시작)
+                if (!isPinching) {
+                    isPinching = true;
+                }
+            } else {
+                // 손가락이 떨어졌을 때 (핀치 해제: 클릭으로 간주)
+                if (isPinching) {
+                    isPinching = false;
+                    if (selectedButton) {
+                        selectedButton.click();
+                    }
+                }
+            }
+        }
 
         // ---- 기존 타이머 및 레시피 관련 함수 ----
         window.onload = function() {
@@ -281,7 +336,7 @@
         }
         
         function goToYoutubeHomepage() {
-            window.location.href = "http://www.youtube.com/";
+            window.open("https://www.youtube.com", "_blank");
         }
 
         function formatTime(ms) {
