@@ -3,497 +3,383 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>부엌 스마트 허브</title>
+    <title>제스처 레시피북</title>
     <style>
-        body { font-family: 'Arial', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background-color: #f4f4f9; }
-        .container { text-align: center; padding: 20px; background-color: white; border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); width: 95%; max-width: 900px; height: 95vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .page { display: none; width: 100%; height: 100%; padding: 20px; box-sizing: border-box; }
-        .page.active { display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .button-group { margin-top: 20px; display: flex; flex-wrap: wrap; justify-content: center; width: 100%; }
-        .timer-controls, .timer-presets { margin-top: 20px; }
-        .action-button, .timer-button { background-color: #007bff; color: white; border: none; padding: 30px 60px; margin: 15px; border-radius: 12px; font-size: 2em; cursor: pointer; transition: background-color 0.3s ease; flex: 1; max-width: 400px; }
-        .action-button:hover, .timer-button:hover { background-color: #0056b3; }
-        .timer-button.stop { background-color: #dc3545; }
-        .timer-button.stop:hover { background-color: #c82333; }
-        .timer-button.reset { background-color: #ffc107; color: black; }
-        .timer-button.reset:hover { background-color: #e0a800; }
-        .timer-preset-button { background-color: #28a745; padding: 20px 40px; font-size: 1.5em; }
-        .timer-preset-button:hover { background-color: #218838; }
-        .timer-display { font-size: 8em; font-weight: bold; margin: 20px 0; }
-        #status-message { margin-top: 20px; font-size: 1.1em; color: #555; }
-        .recipe-list { margin-top: 20px; display: flex; flex-wrap: wrap; justify-content: center; width: 100%; height: 100%; overflow-y: auto; align-items: flex-start; }
-        .recipe-button { background-color: #4CAF50; color: white; border: none; padding: 15px 30px; margin: 10px; border-radius: 12px; font-size: 1.2em; cursor: pointer; transition: background-color 0.3s ease; text-align: left; }
-        .recipe-button:hover { background-color: #45a049; }
-        .recipe-content { text-align: left; }
-        .recipe-content h2 { color: #333; font-size: 2em; }
-        .recipe-content pre { background-color: #eee; padding: 20px; border-radius: 8px; white-space: pre-wrap; word-wrap: break-word; font-size: 1.2em; }
-        .back-button-container { margin-top: 20px; width: 100%; display: flex; justify-content: center; }
-
-        .selected {
-            border: 4px solid #f4c20d;
-            box-shadow: 0 0 10px rgba(244, 194, 13, 0.7);
+        body {
+            display: flex;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            height: 100vh;
+            background-color: #f4f4f4;
         }
-
-        #finger-indicator {
-            position: fixed;
-            width: 15px;
-            height: 15px;
-            background-color: red;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 1000;
-            transform: translate(-50%, -50%);
+        .main-container {
+            display: flex;
+            width: 100%;
+        }
+        .recipe-list-area {
+            flex: 1;
+            background-color: #ffffff;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+        .recipe-content-area {
+            flex: 1;
+            background-color: #fff;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .side-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #e9ecef;
+        }
+        .timer-container, .tool-container {
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin: 10px;
+            border-radius: 8px;
+        }
+        .timer-container {
+            background-color: #ffffff;
+            flex: 1;
+        }
+        .tool-container {
+            background-color: #ffffff;
+            flex: 1;
+        }
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 10px;
+        }
+        .recipe-list ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .recipe-list li {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .recipe-list li:hover {
+            background-color: #f0f0f0;
+        }
+        .recipe-item {
             display: none;
+        }
+        .recipe-item.active {
+            display: block;
+        }
+        .timer-display {
+            font-size: 3em;
+            text-align: center;
+            margin: 20px 0;
+            color: #555;
+        }
+        .timer-buttons {
+            text-align: center;
+        }
+        .timer-buttons button, .convert-button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            transition: border 0.2s;
+        }
+        .timer-buttons button:hover, .convert-button:hover {
+            background-color: #0056b3;
+        }
+        input, select {
+            padding: 8px;
+            margin: 5px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            width: calc(100% - 10px);
+        }
+        .highlight {
+            border: 3px solid #28a745 !important;
+        }
+        #finger-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
         }
     </style>
 </head>
 <body>
-    <div id="finger-indicator"></div>
 
-    <div class="container">
-        <div id="main-menu" class="page active">
-            <div class="button-group">
-                <button class="action-button" onclick="showTimerPage()">타이머/스톱워치</button>
-                <button class="action-button" onclick="goToYoutubeHomepage()">유튜브 시청</button>
-                <button class="action-button" onclick="showRecipePage()">레시피 북</button>
-            </div>
-        </div>
+<div class="main-container">
 
-        <div id="timer-page" class="page">
-            <div class="timer-display" id="timer-display">00:00:00</div>
-            
-            <div class="timer-presets button-group">
-                <button class="timer-button timer-preset-button" onclick="addTime(1)">+1분</button>
-                <button class="timer-button timer-preset-button" onclick="addTime(5)">+5분</button>
-                <button class="timer-button timer-preset-button" onclick="addTime(10)">+10분</button>
-            </div>
-
-            <div class="timer-controls button-group">
-                <button class="timer-button" id="toggle-button" onclick="toggleTimer()">시작</button>
-                <button class="timer-button reset" onclick="resetTimer()">초기화</button>
-            </div>
-            <div class="back-button-container">
-                <button class="action-button" onclick="goBack()">뒤로가기</button>
-            </div>
-        </div>
-
-        <div id="recipe-list-page" class="page">
-            <h2>레시피 목록</h2>
-            <div class="recipe-list">
-                <button class="recipe-button" onclick="showRecipe('recipe1')">토마토 스파게티</button>
-                <button class="recipe-button" onclick="showRecipe('recipe2')">김치볶음밥</button>
-                <button class="recipe-button" onclick="showRecipe('recipe3')">닭볶음탕</button>
-                <button class="recipe-button" onclick="showRecipe('recipe4')">돼지고기 김치찜</button>
-                <button class="recipe-button" onclick="showRecipe('recipe5')">미역국</button>
-                <button class="recipe-button" onclick="showRecipe('recipe6')">된장찌개</button>
-                <button class="recipe-button" onclick="showRecipe('recipe7')">제육볶음</button>
-                <button class="recipe-button" onclick="showRecipe('recipe8')">고등어조림</button>
-            </div>
-            <div class="back-button-container">
-                <button class="action-button" onclick="goBackFromRecipeList()">뒤로가기</button>
-            </div>
-        </div>
-
-        <div id="recipe-detail-page" class="page">
-            <div class="recipe-content">
-                <h2 id="recipe-title"></h2>
-                <pre id="recipe-text"></pre>
-            </div>
-            <div class="back-button-container">
-                <button class="action-button" onclick="goBackToRecipeList()">목록으로</button>
-            </div>
+    <div class="recipe-list-area">
+        <h2>레시피 목록</h2>
+        <div class="recipe-list">
+            <ul>
+                <li onclick="showRecipe('chicken')">매콤한 닭볶음탕 🌶️</li>
+                <li onclick="showRecipe('pasta')">쉬운 크림 파스타 🍝</li>
+                <li onclick="showRecipe('curry')">간단 카레라이스 🍛</li>
+            </ul>
         </div>
     </div>
 
-    <script>
-        // 타이머 관련 변수 및 함수
-        let timerInterval = null;
-        let isRunning = false;
-        let isCountdown = false;
-        let countdownTime = 0; // 밀리초 단위
-        let stopwatchTime = 0; // 밀리초 단위
-        
-        const timerDisplay = document.getElementById('timer-display');
-        const toggleButton = document.getElementById('toggle-button');
-        
-        // ---- 손 인식 및 버튼 선택 관련 변수 및 함수 ----
-        let handCoordinates = {
-            thumb_x: 0,
-            thumb_y: 0,
-            index_x: 0,
-            index_y: 0
-        };
-        const fingerIndicator = document.getElementById('finger-indicator');
-        
-        // 클릭 상태를 저장할 변수들
-        let isPinching = false;
-        const pinchThreshold = 0.05; // 핀치 인식 임계값 (0.0에서 1.0 사이의 정규화된 값)
+    <div class="recipe-content-area">
+        <div id="recipe-chicken" class="recipe-item active">
+            <h3>매콤한 닭볶음탕 레시피 🌶️</h3>
+            <p><strong>재료:</strong> 닭 한 마리, 감자 2개, 양파 1개, 당근 1개, 고춧가루, 간장, 설탕, 마늘</p>
+            <p><strong>요리 과정:</strong></p>
+            <ol>
+                <li>닭을 깨끗이 씻어 한입 크기로 자른다.</li>
+                <li>냄비에 물을 넣고 닭, 감자, 당근을 넣고 끓인다.</li>
+                <li>양념장을 만들어 넣고 중불에서 20분간 끓인다.</li>
+                <li>양파를 넣고 5분 더 끓이면 완성!</li>
+            </ol>
+        </div>
+        <div id="recipe-pasta" class="recipe-item">
+            <h3>쉬운 크림 파스타 레시피 🍝</h3>
+            <p><strong>재료:</strong> 파스타 면 200g, 생크림 200ml, 베이컨, 양파, 마늘</p>
+            <p><strong>요리 과정:</strong></p>
+            <ol>
+                <li>끓는 물에 소금 약간 넣고 파스타 면을 삶는다. (약 8분)</li>
+                <li>팬에 베이컨과 양파, 마늘을 볶는다.</li>
+                <li>생크림을 붓고 끓이다가 삶은 면을 넣고 섞는다.</li>
+                <li>간을 맞춘 후 접시에 담아 맛있게 먹는다.</li>
+            </ol>
+        </div>
+        <div id="recipe-curry" class="recipe-item">
+            <h3>간단 카레라이스 레시피 🍛</h3>
+            <p><strong>재료:</strong> 카레용 고기, 감자, 당근, 양파, 카레 가루</p>
+            <p><strong>요리 과정:</strong></p>
+            <ol>
+                <li>고기와 채소를 한입 크기로 썬다.</li>
+                <li>냄비에 기름을 두르고 고기와 채소를 볶는다.</li>
+                <li>물을 넣고 끓이다가 채소가 익으면 카레 가루를 넣는다.</li>
+                <li>잘 저어가며 끓이다가 걸쭉해지면 불을 끈다.</li>
+            </ol>
+        </div>
+    </div>
 
-        setInterval(fetchAndCheckHandPosition, 50);
+    <div class="side-area">
 
-        async function fetchAndCheckHandPosition() {
-            try {
-                const response = await fetch('http://127.0.0.1:5000/get_coordinates');
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+        <div class="timer-container">
+            <h2>요리 타이머</h2>
+            <div class="timer-display" id="timer-display">00:00</div>
+            <div class="timer-buttons">
+                <button onclick="startTimer()">시작</button>
+                <button onclick="stopTimer()">정지</button>
+                <button onclick="resetTimer()">초기화</button>
+            </div>
+            <input type="number" id="minutes" placeholder="분" style="width: calc(50% - 10px); float: left;">
+            <input type="number" id="seconds" placeholder="초" style="width: calc(50% - 10px); float: right;">
+        </div>
+
+        <div class="tool-container">
+            <h2>단위 변환기</h2>
+            <p>온도 변환</p>
+            <input type="number" id="celsius-input" placeholder="섭씨 (°C)">
+            <p>
+                <button class="convert-button" onclick="convertTemperature('celsius')">화씨 변환</button>
+                <button class="convert-button" onclick="convertTemperature('fahrenheit')">섭씨 변환</button>
+            </p>
+            <p id="temp-result" style="font-weight: bold;"></p>
+        </div>
+    </div>
+
+</div>
+
+<canvas id="finger-canvas"></canvas>
+
+<script>
+    // ----------------------------------------------------
+    // *** 캔버스에 빨간 점 표시 기능 ***
+    // ----------------------------------------------------
+    const canvas = document.getElementById('finger-canvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function drawFingerPoint(x, y) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.beginPath();
+        ctx.arc(x, y, 10, 0, 2 * Math.PI);
+        ctx.fillStyle = 'red';
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#fff';
+        ctx.stroke();
+    }
+
+    // ----------------------------------------------------
+    // *** 제스처 인식 및 버튼 매핑 관련 코드 ***
+    // ----------------------------------------------------
+    let allButtons = [];
+    let currentHighlightedButton = null;
+    let pinchDetected = false;
+
+    // showRecipe 함수
+    function showRecipe(recipeId) {
+        const allRecipeItems = document.querySelectorAll('.recipe-item');
+        allRecipeItems.forEach(item => {
+            item.classList.remove('active');
+        });
+        document.getElementById('recipe-' + recipeId).classList.add('active');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        showRecipe('chicken');
+        allButtons = Array.from(document.querySelectorAll('.timer-buttons button, .convert-button, .recipe-list li'));
+        
+        setInterval(fetchFingerPosition, 100);
+    });
+
+    function fetchFingerPosition() {
+        fetch('/get_finger_pos')
+            .then(response => response.json())
+            .then(data => {
+                const fingerX = data.x * window.innerWidth;
+                const fingerY = data.y * window.innerHeight;
+                const isPinch = data.isPinch;
+
+                if (!isNaN(fingerX) && !isNaN(fingerY)) {
+                    drawFingerPoint(fingerX, fingerY);
+                    const closestButton = findClosestButton(fingerX, fingerY);
+                    highlightButton(closestButton);
+                    handlePinchClick(closestButton, isPinch);
                 }
-                const data = await response.json();
-                
-                // 새로운 좌표 체계에 맞게 handCoordinates 업데이트
-                handCoordinates.thumb_x = data.thumb_x;
-                handCoordinates.thumb_y = data.thumb_y;
-                handCoordinates.index_x = data.index_x;
-                handCoordinates.index_y = data.index_y;
-                
-                checkHandPosition();
+            })
+            .catch(error => console.error('Error fetching data:', error));
+    }
 
-                // 클릭 감지 로직 호출
-                checkPinchClick();
+    function findClosestButton(x, y) {
+        let closestBtn = null;
+        let minDistance = Infinity;
 
-            } catch (e) {
-                console.error("Failed to fetch coordinates:", e);
-                // 오류 발생 시 좌표를 0으로 초기화
-                handCoordinates.thumb_x = 0;
-                handCoordinates.thumb_y = 0;
-                handCoordinates.index_x = 0;
-                handCoordinates.index_y = 0;
-                checkHandPosition();
+        allButtons.forEach(btn => {
+            const rect = btn.getBoundingClientRect();
+            const btnX = rect.left + rect.width / 2;
+            const btnY = rect.top + rect.height / 2;
+            
+            const distance = Math.sqrt(Math.pow(btnX - x, 2) + Math.pow(btnY - y, 2));
+
+            if (distance < minDistance) {
+                minDistance = distance;
+                closestBtn = btn;
             }
+        });
+        return closestBtn;
+    }
+
+    function highlightButton(button) {
+        // 이전에 하이라이트된 버튼이 있고, 그것이 현재 버튼과 다를 경우 하이라이트 제거
+        if (currentHighlightedButton && currentHighlightedButton !== button) {
+            currentHighlightedButton.classList.remove('highlight');
         }
-        
-        function checkHandPosition() {
-            // 엄지 좌표를 기준으로 포인터 표시
-            if (handCoordinates.thumb_x === 0 && handCoordinates.thumb_y === 0) {
-                const allButtons = document.querySelectorAll('.action-button, .timer-button, .timer-preset-button, .recipe-button');
-                allButtons.forEach(button => {
-                    button.classList.remove('selected');
+        // 새로운 버튼에 하이라이트 추가
+        if (button) {
+            button.classList.add('highlight');
+            currentHighlightedButton = button;
+        }
+    }
+
+    function handlePinchClick(button, isPinch) {
+        if (isPinch && !pinchDetected) {
+            pinchDetected = true;
+            if (button) {
+                button.click();
+                // 모든 버튼의 하이라이트 스타일 초기화
+                allButtons.forEach(btn => {
+                    btn.classList.remove('highlight');
                 });
-                fingerIndicator.style.display = 'none';
-                return;
-            }
-
-            const activePage = document.querySelector('.page.active');
-            if (!activePage) return;
-
-            fingerIndicator.style.display = 'block';
-            // 엄지 좌표를 화면 픽셀 좌표로 변환하여 포인터 위치 설정
-            fingerIndicator.style.left = `${handCoordinates.thumb_x * window.innerWidth}px`;
-            fingerIndicator.style.top = `${handCoordinates.thumb_y * window.innerHeight}px`;
-
-            const allButtons = document.querySelectorAll('.action-button, .timer-button, .timer-preset-button, .recipe-button');
-            allButtons.forEach(button => {
-                button.classList.remove('selected');
-            });
-            
-            let buttons = [];
-            if (activePage.id === 'main-menu') {
-                buttons = activePage.querySelectorAll('.action-button');
-            } else if (activePage.id === 'timer-page') {
-                const presetButtons = activePage.querySelectorAll('.timer-preset-button');
-                const controlButtons = activePage.querySelectorAll('.timer-controls .timer-button');
-                const backButton = activePage.querySelector('.back-button-container .action-button');
-                buttons = [...presetButtons, ...controlButtons, backButton];
-            } else if (activePage.id === 'recipe-list-page') {
-                buttons = activePage.querySelectorAll('.recipe-button, .back-button-container .action-button');
-            } else if (activePage.id === 'recipe-detail-page') {
-                buttons = activePage.querySelectorAll('.back-button-container .action-button');
-            }
-            
-            if (buttons.length === 0) return;
-            
-            let closestButton = null;
-            let minDistance = Infinity;
-            
-            // 엄지 좌표를 기준으로 가장 가까운 버튼 찾기
-            const handX = handCoordinates.thumb_x * window.innerWidth;
-            const handY = handCoordinates.thumb_y * window.innerHeight;
-
-            buttons.forEach(button => {
-                const rect = button.getBoundingClientRect();
-                const buttonCenterX = rect.left + rect.width / 2;
-                const buttonCenterY = rect.top + rect.height / 2;
                 
-                const dx = handX - buttonCenterX;
-                const dy = handY - buttonCenterY;
-                const distance = Math.sqrt(dx * dx + dy * dy);
+                // 클릭된 버튼에만 노란색 테두리 추가
+                button.style.border = '3px solid #ffc107';
                 
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    closestButton = button;
-                }
-            });
-            
-            if (closestButton) {
-                closestButton.classList.add('selected');
+                // 핀치 클릭이 끝난 후 하이라이트 클래스를 다시 추가하여 정상 상태로 복구
+                setTimeout(() => {
+                    highlightButton(currentHighlightedButton);
+                    button.style.border = 'none'; // 노란색 테두리 제거
+                }, 200);
             }
+        } else if (!isPinch) {
+            pinchDetected = false;
         }
-        
-        function checkPinchClick() {
-            // 손 좌표가 유효하지 않으면 핀치 상태 초기화
-            if (handCoordinates.thumb_x === 0 && handCoordinates.thumb_y === 0) {
-                isPinching = false;
-                return;
-            }
+    }
+    
+    // ----------------------------------------------------
+    // *** 타이머 및 단위 변환기 관련 코드 ***
+    // ----------------------------------------------------
+    let timerInterval;
+    let totalSeconds = 0;
 
-            // 엄지(thumb)와 검지(index) 사이의 유클리드 거리 계산 (정규화된 좌표 기준)
-            const dx = handCoordinates.thumb_x - handCoordinates.index_x;
-            const dy = handCoordinates.thumb_y - handCoordinates.index_y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
+    function startTimer() {
+        const minutes = parseInt(document.getElementById('minutes').value) || 0;
+        const seconds = parseInt(document.getElementById('seconds').value) || 0;
+        totalSeconds = minutes * 60 + seconds;
+        if (totalSeconds <= 0) {
+            alert("유효한 시간을 입력하세요.");
+            return;
+        }
+        clearInterval(timerInterval);
+        timerInterval = setInterval(updateTimer, 1000);
+    }
 
-            const selectedButton = document.querySelector('.selected');
-            
-            if (distance < pinchThreshold) {
-                // 손가락이 닿았을 때 (핀치 시작)
-                if (!isPinching) {
-                    isPinching = true;
-                }
-            } else {
-                // 손가락이 떨어졌을 때 (핀치 해제: 클릭으로 간주)
-                if (isPinching) {
-                    isPinching = false;
-                    if (selectedButton) {
-                        selectedButton.click();
-                    }
-                }
-            }
-        }
-
-        // ---- 기존 타이머 및 레시피 관련 함수 ----
-        window.onload = function() {
-            const savedTimerState = localStorage.getItem('timerState');
-            if (savedTimerState) {
-                const state = JSON.parse(savedTimerState);
-                isCountdown = state.isCountdown;
-                
-                const currentTime = Date.now();
-                const elapsedTime = currentTime - state.lastUpdateTime;
-
-                if (isCountdown) {
-                    countdownTime = state.remainingTime - elapsedTime;
-                    if (countdownTime <= 0) {
-                        countdownTime = 0;
-                        localStorage.removeItem('timerState');
-                        alert('타이머가 종료되었습니다!');
-                    } else {
-                        showTimerPage();
-                        startTimer();
-                    }
-                } else {
-                    stopwatchTime = state.elapsedTime + elapsedTime;
-                    showTimerPage();
-                    startTimer();
-                }
-            }
-        };
-
-        function hideAllPages() {
-            document.querySelectorAll('.page').forEach(page => {
-                page.classList.remove('active');
-            });
-        }
-        
-        function goBack() {
-            hideAllPages();
-            document.getElementById('main-menu').classList.add('active');
-        }
-
-        function showTimerPage() {
-            hideAllPages();
-            document.getElementById('timer-page').classList.add('active');
-            if(isRunning) {
-                if(isCountdown) {
-                    timerDisplay.textContent = formatTime(countdownTime);
-                } else {
-                    timerDisplay.textContent = formatTime(stopwatchTime);
-                }
-            }
-        }
-        
-        function showRecipePage() {
-            hideAllPages();
-            document.getElementById('recipe-list-page').classList.add('active');
-        }
-
-        function goBackFromRecipeList() {
-            hideAllPages();
-            document.getElementById('main-menu').classList.add('active');
-        }
-        
-        function showRecipe(recipeId) {
-            const recipe = recipes[recipeId];
-            if (recipe) {
-                document.getElementById('recipe-title').textContent = recipe.title;
-                document.getElementById('recipe-text').textContent = recipe.content;
-                hideAllPages();
-                document.getElementById('recipe-detail-page').classList.add('active');
-            }
-        }
-
-        function goBackToRecipeList() {
-            hideAllPages();
-            document.getElementById('recipe-detail-page').classList.remove('active');
-            document.getElementById('recipe-list-page').classList.add('active');
-        }
-        
-        function goToYoutubeHomepage() {
-            window.open("https://www.youtube.com", "_blank");
-        }
-
-        function formatTime(ms) {
-            let totalSeconds = Math.floor(ms / 1000);
-            let hours = Math.floor(totalSeconds / 3600);
-            let minutes = Math.floor((totalSeconds % 3600) / 60);
-            let seconds = totalSeconds % 60;
-            return [hours, minutes, seconds]
-                .map(v => v < 10 ? '0' + v : v)
-                .join(':');
-        }
-
-        function addTime(minutes) {
-            if (isRunning) return;
-            isCountdown = true;
-            countdownTime += minutes * 60 * 1000;
-            timerDisplay.textContent = formatTime(countdownTime);
-        }
-
-        function toggleTimer() {
-            if (isRunning) {
-                clearInterval(timerInterval);
-                timerInterval = null;
-                localStorage.removeItem('timerState');
-                toggleButton.textContent = '시작';
-                toggleButton.classList.remove('stop');
-            } else {
-                startTimer();
-                toggleButton.textContent = '정지';
-                toggleButton.classList.add('stop');
-            }
-            isRunning = !isRunning;
-        }
-
-        function startTimer() {
-            if (timerInterval) clearInterval(timerInterval);
-            const lastUpdateTime = Date.now();
-            if (isCountdown) {
-                timerInterval = setInterval(() => {
-                    countdownTime = countdownTime - 1000;
-                    if (countdownTime <= 0) {
-                        countdownTime = 0;
-                        clearInterval(timerInterval);
-                        timerInterval = null;
-                        isRunning = false;
-                        isCountdown = false;
-                        localStorage.removeItem('timerState');
-                        toggleButton.textContent = '시작';
-                        alert('타이머가 종료되었습니다!');
-                    }
-                    timerDisplay.textContent = formatTime(countdownTime);
-                    localStorage.setItem('timerState', JSON.stringify({
-                        isCountdown: true,
-                        remainingTime: countdownTime,
-                        lastUpdateTime: Date.now()
-                    }));
-                }, 1000);
-            } else {
-                timerInterval = setInterval(() => {
-                    stopwatchTime = stopwatchTime + 1000;
-                    timerDisplay.textContent = formatTime(stopwatchTime);
-                    localStorage.setItem('timerState', JSON.stringify({
-                        isCountdown: false,
-                        elapsedTime: stopwatchTime,
-                        lastUpdateTime: Date.now()
-                    }));
-                }, 1000);
-            }
-        }
-
-        function resetTimer() {
+    function updateTimer() {
+        if (totalSeconds <= 0) {
             clearInterval(timerInterval);
-            timerInterval = null;
-            isRunning = false;
-            isCountdown = false;
-            countdownTime = 0;
-            stopwatchTime = 0;
-            localStorage.removeItem('timerState');
-            timerDisplay.textContent = '00:00:00';
-            toggleButton.textContent = '시작';
-            toggleButton.classList.remove('stop');
+            document.getElementById('timer-display').innerText = "시간 초과!";
+            alert("타이머가 종료되었습니다!");
+            return;
         }
+        totalSeconds--;
+        let min = Math.floor(totalSeconds / 60);
+        let sec = totalSeconds % 60;
+        document.getElementById('timer-display').innerText = 
+            `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+    }
 
-        const recipes = {
-            'recipe1': {
-                title: '토마토 스파게티',
-                content: `재료: 스파게티 면, 토마토소스, 양파, 마늘, 올리브오일
+    function stopTimer() {
+        clearInterval(timerInterval);
+    }
 
-1. 면을 삶고 올리브오일을 약간 넣어 면끼리 붙지 않게 합니다.
-2. 팬에 올리브오일을 두르고 다진 마늘과 양파를 볶습니다.
-3. 토마토소스를 넣고 끓입니다.
-4. 삶은 면을 넣고 잘 섞어줍니다.`
-            },
-            'recipe2': {
-                title: '김치볶음밥',
-                content: `재료: 밥, 김치, 돼지고기 또는 참치, 양파, 김칫국물, 식용유, 간장
+    function resetTimer() {
+        clearInterval(timerInterval);
+        totalSeconds = 0;
+        document.getElementById('timer-display').innerText = "00:00";
+        document.getElementById('minutes').value = '';
+        document.getElementById('seconds').value = '';
+    }
 
-1. 김치와 돼지고기를 잘게 썰어 준비합니다.
-2. 팬에 식용유를 두르고 돼지고기를 먼저 볶습니다.
-3. 김치와 양파를 넣고 함께 볶습니다.
-4. 밥을 넣고 섞은 후, 김칫국물과 간장으로 간을 맞춥니다.`
-            },
-            'recipe3': {
-                title: '닭볶음탕',
-                content: `재료: 닭 한 마리, 감자, 양파, 당근, 대파, 닭볶음탕 양념(고춧가루, 간장, 설탕, 다진 마늘, 생강)
+    function convertTemperature(type) {
+        const celsiusInput = document.getElementById('celsius-input');
+        const tempResult = document.getElementById('temp-result');
+        const value = parseFloat(celsiusInput.value);
+        if (isNaN(value)) {
+            tempResult.innerText = "유효한 숫자를 입력하세요.";
+            return;
+        }
+        let result;
+        if (type === 'celsius') {
+            result = (value * 1.8 + 32).toFixed(2);
+            tempResult.innerText = `화씨: ${result} °F`;
+        } else if (type === 'fahrenheit') {
+            result = ((value - 32) / 1.8).toFixed(2);
+            tempResult.innerText = `섭씨: ${result} °C`;
+        }
+    }
+</script>
 
-1. 닭을 깨끗이 씻어 끓는 물에 살짝 데칩니다.
-2. 감자, 양파, 당근을 큼직하게 썰어 준비합니다.
-3. 양념 재료를 모두 섞어 양념장을 만듭니다.
-4. 냄비에 닭과 채소, 양념을 넣고 물을 자작하게 부어 끓입니다.
-5. 닭이 익고 국물이 걸쭉해질 때까지 조립니다. 마지막에 대파를 넣고 한소끔 더 끓입니다.`
-            },
-            'recipe4': {
-                title: '돼지고기 김치찜',
-                content: `재료: 돼지고기 목살, 잘 익은 김치, 두부, 양파, 멸치 육수, 다진 마늘
-
-1. 냄비 바닥에 김치를 깔고 그 위에 돼지고기를 올립니다.
-2. 김칫국물, 다진 마늘, 양파를 넣고 멸치 육수를 자작하게 붓습니다.
-3. 뚜껑을 닫고 중불에서 푹 끓입니다.
-4. 돼지고기와 김치가 부드러워지면 두부를 넣고 조금 더 끓입니다.`
-            },
-            'recipe5': {
-                title: '미역국',
-                content: `재료: 건미역, 소고기(양지), 다진 마늘, 간장, 참기름
-
-1. 건미역은 물에 불려 깨끗이 씻은 후 먹기 좋게 자릅니다.
-2. 냄비에 참기름을 두르고 소고기와 다진 마늘을 볶습니다.
-3. 미역을 넣고 함께 볶다가 간장을 넣어 간을 합니다.
-4. 물을 붓고 끓입니다. 소고기와 미역이 부드러워질 때까지 충분히 끓여줍니다.`
-            },
-            'recipe6': {
-                title: '된장찌개',
-                content: `재료: 된장, 두부, 호박, 양파, 버섯, 멸치 육수
-
-1. 멸치 육수를 끓입니다.
-2. 육수에 된장을 풀어 넣고 호박, 양파를 넣고 끓입니다.
-3. 야채가 어느 정도 익으면 두부와 버섯을 넣고 한소끔 더 끓입니다.`
-            },
-            'recipe7': {
-                title: '제육볶음',
-                content: `재료: 돼지고기 앞다리살, 양파, 대파, 제육볶음 양념(고춧가루, 간장, 설탕, 다진 마늘, 생강)
-
-1. 돼지고기를 먹기 좋게 자르고 양파와 대파를 채 썹니다.
-2. 양념 재료를 모두 섞어 양념장을 만듭니다.
-3. 돼지고기에 양념을 넣고 버무려 잠시 재워둡니다.
-4. 팬에 고기를 볶다가 익으면 양파와 대파를 넣고 빠르게 볶아줍니다.`
-            },
-            'recipe8': {
-                title: '고등어조림',
-                content: `재료: 고등어, 무, 양파, 대파, 고등어조림 양념(간장, 고춧가루, 설탕, 다진 마늘, 생강)
-
-1. 고등어는 비늘을 긁고 깨끗이 씻어 준비합니다.
-2. 냄비 바닥에 무를 깔고 그 위에 고등어를 올립니다.
-3. 양념장을 만들고 끓입니다.
-4. 양념이 고등어에 잘 배도록 국물을 끼얹어가며 조립니다.`
-            }
-        };
-    </script>
 </body>
 </html>
