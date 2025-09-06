@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>제스처 레시피북</title>
+    <style>
+        body {
+            display: flex;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+        .main-container {
+            display: flex;
+            width: 100%;
+        }
+        .recipe-list-area {
+            flex: 1;
+            background-color: #ffffff;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+        .recipe-content-area {
+            flex: 1;
+            background-color: #fff;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .side-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #e9ecef;
+        }
+        .timer-container, .tool-container {
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin: 10px;
+            border-radius: 8px;
+        }
+        .timer-container {
+            background-color: #ffffff;
+            flex: 1;
+        }
+        .tool-container {
+            background-color: #ffffff;
+            flex: 1;
+        }
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 10px;
+        }
+        .recipe-list ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .recipe-list li {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .recipe-list li:hover {
+            background-color: #f0f0f0;
+        }
+        .recipe-item {
+            display: none;
+        }
+        .recipe-item.active {
+            display: block;
+        }
+        .timer-display {
+            font-size: 3em;
+            text-align: center;
+            margin: 20px 0;
+            color: #555;
+        }
+        .timer-buttons {
+            text-align: center;
+        }
+        .timer-buttons button, .convert-button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            transition: border 0.2s;
+        }
+        .timer-buttons button:hover, .convert-button:hover {
+            background-color: #0056b3;
+        }
+        input, select {
+            padding: 8px;
+            margin: 5px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            width: calc(100% - 10px);
+        }
+        .highlight {
+            border: 3px solid #28a745 !important;
+        }
+        #finger-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+
+    <div class="recipe-list-area">
+        <h2>레시피 목록</h2>
+        <div class="recipe-list">
+            <ul>
+                <li onclick="showRecipe('chicken')">매콤한 닭볶음탕 🌶️</li>
+                <li onclick="showRecipe('pasta')">쉬운 크림 파스타 🍝</li>
+                <li onclick="showRecipe('curry')">간단 카레라이스 🍛</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="recipe-content-area">
+        <div id="recipe-chicken" class="recipe-item active">
+            <h3>매콤한 닭볶음탕 레시피 🌶️</h3>
+            <p><strong>재료:</strong> 닭 한 마리, 감자 2개, 양파 1개, 당근 1개, 고춧가루, 간장, 설탕, 마늘</p>
+            <p><strong>요리 과정:</strong></p>
+            <ol>
+                <li>닭을 깨끗이 씻어 한입 크기로 자른다.</li>
+                <li>냄비에 물을 넣고 닭, 감자, 당근을 넣고 끓인다.</li>
+                <li>양념장을 만들어 넣고 중불에서 20분간 끓인다.</li>
+                <li>양파를 넣고 5분 더 끓이면 완성!</li>
+            </ol>
+        </div>
+        <div id="recipe-pasta" class="recipe-item">
+            <h3>쉬운 크림 파스타 레시피 🍝</h3>
+            <p><strong>재료:</strong> 파스타 면 200g, 생크림 200ml, 베이컨, 양파, 마늘</p>
+            <p><strong>요리 과정:</strong></p>
+            <ol>
+                <li>끓는 물에 소금 약간 넣고 파스타 면을 삶는다. (약 8분)</li>
+                <li>팬에 베이컨과 양파, 마늘을 볶는다.</li>
+                <li>생크림을 붓고 끓이다가 삶은 면을 넣고 섞는다.</li>
+                <li>간을 맞춘 후 접시에 담아 맛있게 먹는다.</li>
+            </ol>
+        </div>
+        <div id="recipe-curry" class="recipe-item">
+            <h3>간단 카레라이스 레시피 🍛</h3>
+            <p><strong>재료:</strong> 카레용 고기, 감자, 당근, 양파, 카레 가루</p>
+            <p><strong>요리 과정:</strong></p>
+            <ol>
+                <li>고기와 채소를 한입 크기로 썬다.</li>
+                <li>냄비에 기름을 두르고 고기와 채소를 볶는다.</li>
+                <li>물을 넣고 끓이다가 채소가 익으면 카레 가루를 넣는다.</li>
+                <li>잘 저어가며 끓이다가 걸쭉해지면 불을 끈다.</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="side-area">
+
+        <div class="timer-container">
+            <h2>요리 타이머</h2>
+            <div class="timer-display" id="timer-display">00:00</div>
+            <div class="timer-buttons">
+                <button onclick="startTimer()">시작</button>
+                <button onclick="stopTimer()">정지</button>
+                <button onclick="resetTimer()">초기화</button>
+            </div>
+            <input type="number" id="minutes" placeholder="분" style="width: calc(50% - 10px); float: left;">
+            <input type="number" id="seconds" placeholder="초" style="width: calc(50% - 10px); float: right;">
+        </div>
+
+        <div class="tool-container">
+            <h2>단위 변환기</h2>
+            <p>온도 변환</p>
+            <input type="number" id="celsius-input" placeholder="섭씨 (°C)">
+            <p>
+                <button class="convert-button" onclick="convertTemperature('celsius')">화씨 변환</button>
+                <button class="convert-button" onclick="convertTemperature('fahrenheit')">섭씨 변환</button>
+            </p>
+            <p id="temp-result" style="font-weight: bold;"></p>
+        </div>
+    </div>
+
+</div>
+
+<canvas id="finger-canvas"></canvas>
+
+<script>
+    // ----------------------------------------------------
+    // *** 캔버스에 빨간 점 표시 기능 ***
+    // ----------------------------------------------------
+    const canvas = document.getElementById('finger-canvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function drawFingerPoint(x, y) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.beginPath();
+        ctx.arc(x, y, 10, 0, 2 * Math.PI);
+        ctx.fillStyle = 'red';
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#fff';
+        ctx.stroke();
+    }
+
+    // ----------------------------------------------------
+    // *** 제스처 인식 및 버튼 매핑 관련 코드 ***
+    // ----------------------------------------------------
+    let allButtons = [];
+    let currentHighlightedButton = null;
+    let pinchDetected = false;
+
+    // showRecipe 함수
+    function showRecipe(recipeId) {
+        const allRecipeItems = document.querySelectorAll('.recipe-item');
+        allRecipeItems.forEach(item => {
+            item.classList.remove('active');
+        });
+        document.getElementById('recipe-' + recipeId).classList.add('active');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        showRecipe('chicken');
+        allButtons = Array.from(document.querySelectorAll('.timer-buttons button, .convert-button, .recipe-list li'));
+        
+        setInterval(fetchFingerPosition, 100);
+    });
+
+    function fetchFingerPosition() {
+        fetch('/get_finger_pos')
+            .then(response => response.json())
+            .then(data => {
+                const fingerX = data.x * window.innerWidth;
+                const fingerY = data.y * window.innerHeight;
+                const isPinch = data.isPinch;
+
+                if (!isNaN(fingerX) && !isNaN(fingerY)) {
+                    drawFingerPoint(fingerX, fingerY);
+                    const closestButton = findClosestButton(fingerX, fingerY);
+                    highlightButton(closestButton);
+                    handlePinchClick(closestButton, isPinch);
+                }
+            })
+            .catch(error => console.error('Error fetching data:', error));
+    }
+
+    function findClosestButton(x, y) {
+        let closestBtn = null;
+        let minDistance = Infinity;
+
+        allButtons.forEach(btn => {
+            const rect = btn.getBoundingClientRect();
+            const btnX = rect.left + rect.width / 2;
+            const btnY = rect.top + rect.height / 2;
+            
+            const distance = Math.sqrt(Math.pow(btnX - x, 2) + Math.pow(btnY - y, 2));
+
+            if (distance < minDistance) {
+                minDistance = distance;
+                closestBtn = btn;
+            }
+        });
+        return closestBtn;
+    }
+
+    function highlightButton(button) {
+        // 이전에 하이라이트된 버튼이 있고, 그것이 현재 버튼과 다를 경우 하이라이트 제거
+        if (currentHighlightedButton && currentHighlightedButton !== button) {
+            currentHighlightedButton.classList.remove('highlight');
+        }
+        // 새로운 버튼에 하이라이트 추가
+        if (button) {
+            button.classList.add('highlight');
+            currentHighlightedButton = button;
+        }
+    }
+
+    function handlePinchClick(button, isPinch) {
+        if (isPinch && !pinchDetected) {
+            pinchDetected = true;
+            if (button) {
+                button.click();
+                // 모든 버튼의 하이라이트 스타일 초기화
+                allButtons.forEach(btn => {
+                    btn.classList.remove('highlight');
+                });
+                
+                // 클릭된 버튼에만 노란색 테두리 추가
+                button.style.border = '3px solid #ffc107';
+                
+                // 핀치 클릭이 끝난 후 하이라이트 클래스를 다시 추가하여 정상 상태로 복구
+                setTimeout(() => {
+                    highlightButton(currentHighlightedButton);
+                    button.style.border = 'none'; // 노란색 테두리 제거
+                }, 200);
+            }
+        } else if (!isPinch) {
+            pinchDetected = false;
+        }
+    }
+    
+    // ----------------------------------------------------
+    // *** 타이머 및 단위 변환기 관련 코드 ***
+    // ----------------------------------------------------
+    let timerInterval;
+    let totalSeconds = 0;
+
+    function startTimer() {
+        const minutes = parseInt(document.getElementById('minutes').value) || 0;
+        const seconds = parseInt(document.getElementById('seconds').value) || 0;
+        totalSeconds = minutes * 60 + seconds;
+        if (totalSeconds <= 0) {
+            alert("유효한 시간을 입력하세요.");
+            return;
+        }
+        clearInterval(timerInterval);
+        timerInterval = setInterval(updateTimer, 1000);
+    }
+
+    function updateTimer() {
+        if (totalSeconds <= 0) {
+            clearInterval(timerInterval);
+            document.getElementById('timer-display').innerText = "시간 초과!";
+            alert("타이머가 종료되었습니다!");
+            return;
+        }
+        totalSeconds--;
+        let min = Math.floor(totalSeconds / 60);
+        let sec = totalSeconds % 60;
+        document.getElementById('timer-display').innerText = 
+            `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+    }
+
+    function stopTimer() {
+        clearInterval(timerInterval);
+    }
+
+    function resetTimer() {
+        clearInterval(timerInterval);
+        totalSeconds = 0;
+        document.getElementById('timer-display').innerText = "00:00";
+        document.getElementById('minutes').value = '';
+        document.getElementById('seconds').value = '';
+    }
+
+    function convertTemperature(type) {
+        const celsiusInput = document.getElementById('celsius-input');
+        const tempResult = document.getElementById('temp-result');
+        const value = parseFloat(celsiusInput.value);
+        if (isNaN(value)) {
+            tempResult.innerText = "유효한 숫자를 입력하세요.";
+            return;
+        }
+        let result;
+        if (type === 'celsius') {
+            result = (value * 1.8 + 32).toFixed(2);
+            tempResult.innerText = `화씨: ${result} °F`;
+        } else if (type === 'fahrenheit') {
+            result = ((value - 32) / 1.8).toFixed(2);
+            tempResult.innerText = `섭씨: ${result} °C`;
+        }
+    }
+</script>
+
+</body>
+</html>
