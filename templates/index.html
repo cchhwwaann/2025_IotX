@@ -73,6 +73,24 @@
         .recipe-item.active {
             display: block;
         }
+        /* 단계별 레시피 스타일 */
+        .recipe-step {
+            display: none;
+            border: 1px solid #e0e0e0;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+        }
+        .recipe-step.active-step {
+            display: block;
+        }
+        .step-navigation {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
         .timer-display {
             font-size: 3em;
             text-align: center;
@@ -82,7 +100,7 @@
         .timer-buttons {
             text-align: center;
         }
-        .timer-buttons button, .convert-button {
+        .timer-buttons button, .convert-button, .step-navigation button {
             padding: 10px 20px;
             margin: 5px;
             border: none;
@@ -92,7 +110,7 @@
             color: white;
             transition: border 0.2s;
         }
-        .timer-buttons button:hover, .convert-button:hover {
+        .timer-buttons button:hover, .convert-button:hover, .step-navigation button:hover {
             background-color: #0056b3;
         }
         input, select {
@@ -135,35 +153,81 @@
         <div id="recipe-chicken" class="recipe-item active">
             <h3>매콤한 닭볶음탕 레시피 🌶️</h3>
             <p><strong>재료:</strong> 닭 한 마리, 감자 2개, 양파 1개, 당근 1개, 고춧가루, 간장, 설탕, 마늘</p>
-            <p><strong>요리 과정:</strong></p>
-            <ol>
-                <li>닭을 깨끗이 씻어 한입 크기로 자른다.</li>
-                <li>냄비에 물을 넣고 닭, 감자, 당근을 넣고 끓인다.</li>
-                <li>양념장을 만들어 넣고 중불에서 20분간 끓인다.</li>
-                <li>양파를 넣고 5분 더 끓이면 완성!</li>
-            </ol>
+            <div id="chicken-step-1" class="recipe-step active-step">
+                <h4>단계 1: 닭 손질</h4>
+                <p>닭을 깨끗이 씻어 한입 크기로 자른다.</p>
+                <img src="images/chicken_step1.jpg" alt="닭 손질 이미지" style="width:100%;">
+            </div>
+            <div id="chicken-step-2" class="recipe-step">
+                <h4>단계 2: 재료 넣고 끓이기</h4>
+                <p>냄비에 물을 넣고 손질한 닭과 감자, 당근을 넣고 끓인다.</p>
+                <img src="images/chicken_step2.jpg" alt="재료 넣고 끓이는 이미지" style="width:100%;">
+            </div>
+            <div id="chicken-step-3" class="recipe-step">
+                <h4>단계 3: 양념장 추가</h4>
+                <p>고춧가루, 간장, 설탕, 다진 마늘로 만든 양념장을 넣고 중불에서 20분간 끓인다.</p>
+                <img src="images/chicken_step3.jpg" alt="양념장 추가 이미지" style="width:100%;">
+            </div>
+            <div id="chicken-step-4" class="recipe-step">
+                <h4>단계 4: 양파 넣고 마무리</h4>
+                <p>마지막으로 양파를 넣고 5분 더 끓이면 완성!</p>
+                <img src="images/chicken_step4.jpg" alt="완성된 닭볶음탕 이미지" style="width:100%;">
+            </div>
         </div>
+        
         <div id="recipe-pasta" class="recipe-item">
             <h3>쉬운 크림 파스타 레시피 🍝</h3>
             <p><strong>재료:</strong> 파스타 면 200g, 생크림 200ml, 베이컨, 양파, 마늘</p>
-            <p><strong>요리 과정:</strong></p>
-            <ol>
-                <li>끓는 물에 소금 약간 넣고 파스타 면을 삶는다. (약 8분)</li>
-                <li>팬에 베이컨과 양파, 마늘을 볶는다.</li>
-                <li>생크림을 붓고 끓이다가 삶은 면을 넣고 섞는다.</li>
-                <li>간을 맞춘 후 접시에 담아 맛있게 먹는다.</li>
-            </ol>
+            <div id="pasta-step-1" class="recipe-step active-step">
+                <h4>단계 1: 면 삶기</h4>
+                <p>끓는 물에 소금 약간 넣고 파스타 면을 삶는다. (약 8분)</p>
+                <img src="images/pasta_step1.jpg" alt="파스타 면 삶는 이미지" style="width:100%;">
+            </div>
+            <div id="pasta-step-2" class="recipe-step">
+                <h4>단계 2: 재료 볶기</h4>
+                <p>팬에 베이컨과 양파, 마늘을 볶는다.</p>
+                <img src="images/pasta_step2.jpg" alt="재료 볶는 이미지" style="width:100%;">
+            </div>
+            <div id="pasta-step-3" class="recipe-step">
+                <h4>단계 3: 생크림 넣기</h4>
+                <p>생크림을 붓고 끓이다가 삶은 면을 넣고 섞는다.</p>
+                <img src="images/pasta_step3.jpg" alt="생크림 넣는 이미지" style="width:100%;">
+            </div>
+            <div id="pasta-step-4" class="recipe-step">
+                <h4>단계 4: 완성!</h4>
+                <p>간을 맞춘 후 접시에 담아 맛있게 먹는다.</p>
+                <img src="images/pasta_step4.jpg" alt="완성된 파스타 이미지" style="width:100%;">
+            </div>
         </div>
+        
         <div id="recipe-curry" class="recipe-item">
             <h3>간단 카레라이스 레시피 🍛</h3>
             <p><strong>재료:</strong> 카레용 고기, 감자, 당근, 양파, 카레 가루</p>
-            <p><strong>요리 과정:</strong></p>
-            <ol>
-                <li>고기와 채소를 한입 크기로 썬다.</li>
-                <li>냄비에 기름을 두르고 고기와 채소를 볶는다.</li>
-                <li>물을 넣고 끓이다가 채소가 익으면 카레 가루를 넣는다.</li>
-                <li>잘 저어가며 끓이다가 걸쭉해지면 불을 끈다.</li>
-            </ol>
+            <div id="curry-step-1" class="recipe-step active-step">
+                <h4>단계 1: 재료 준비</h4>
+                <p>고기와 채소를 한입 크기로 썬다.</p>
+                <img src="images/curry_step1.jpg" alt="재료 준비 이미지" style="width:100%;">
+            </div>
+            <div id="curry-step-2" class="recipe-step">
+                <h4>단계 2: 재료 볶기</h4>
+                <p>냄비에 기름을 두르고 고기와 채소를 볶는다.</p>
+                <img src="images/curry_step2.jpg" alt="재료 볶는 이미지" style="width:100%;">
+            </div>
+            <div id="curry-step-3" class="recipe-step">
+                <h4>단계 3: 물과 가루 넣기</h4>
+                <p>물을 넣고 끓이다가 채소가 익으면 카레 가루를 넣는다.</p>
+                <img src="images/curry_step3.jpg" alt="카레 가루 넣는 이미지" style="width:100%;">
+            </div>
+            <div id="curry-step-4" class="recipe-step">
+                <h4>단계 4: 완성!</h4>
+                <p>잘 저어가며 끓이다가 걸쭉해지면 불을 끈다.</p>
+                <img src="images/curry_step4.jpg" alt="완성된 카레 이미지" style="width:100%;">
+            </div>
+        </div>
+
+        <div class="step-navigation">
+            <button id="prev-step-btn" onclick="prevStep()">이전</button>
+            <button id="next-step-btn" onclick="nextStep()">다음 단계</button>
         </div>
     </div>
 
@@ -229,6 +293,10 @@
     let currentHighlightedButton = null;
     let pinchDetected = false;
 
+    // 단계별 레시피 제어를 위한 변수
+    let currentStepIndex = 0;
+    let totalSteps = 0;
+
     // showRecipe 함수
     function showRecipe(recipeId) {
         const allRecipeItems = document.querySelectorAll('.recipe-item');
@@ -236,11 +304,63 @@
             item.classList.remove('active');
         });
         document.getElementById('recipe-' + recipeId).classList.add('active');
+        
+        // 새로운 단계 전환 로직
+        currentStepIndex = 0;
+        const currentRecipe = document.getElementById('recipe-' + recipeId);
+        const steps = currentRecipe.querySelectorAll('.recipe-step');
+        totalSteps = steps.length;
+        
+        steps.forEach(step => step.classList.remove('active-step'));
+        steps[0].classList.add('active-step');
+        
+        // 버튼 상태 업데이트
+        updateNavigationButtons();
+    }
+    
+    // 다음 단계로 이동하는 함수
+    function nextStep() {
+        const currentRecipe = document.querySelector('.recipe-item.active');
+        const steps = currentRecipe.querySelectorAll('.recipe-step');
+    
+        if (currentStepIndex < totalSteps - 1) {
+            steps[currentStepIndex].classList.remove('active-step');
+            currentStepIndex++;
+            steps[currentStepIndex].classList.add('active-step');
+        }
+        updateNavigationButtons();
+    }
+    
+    // 이전 단계로 이동하는 함수
+    function prevStep() {
+        const currentRecipe = document.querySelector('.recipe-item.active');
+        const steps = currentRecipe.querySelectorAll('.recipe-step');
+    
+        if (currentStepIndex > 0) {
+            steps[currentStepIndex].classList.remove('active-step');
+            currentStepIndex--;
+            steps[currentStepIndex].classList.add('active-step');
+        }
+        updateNavigationButtons();
+    }
+    
+    // 네비게이션 버튼의 상태를 업데이트하는 함수
+    function updateNavigationButtons() {
+        const nextBtn = document.getElementById('next-step-btn');
+        const prevBtn = document.getElementById('prev-step-btn');
+    
+        prevBtn.style.display = (currentStepIndex > 0) ? 'inline-block' : 'none';
+        
+        if (currentStepIndex === totalSteps - 1) {
+            nextBtn.innerText = '레시피 완료!';
+        } else {
+            nextBtn.innerText = '다음 단계';
+        }
     }
 
     document.addEventListener('DOMContentLoaded', () => {
         showRecipe('chicken');
-        allButtons = Array.from(document.querySelectorAll('.timer-buttons button, .convert-button, .recipe-list li'));
+        allButtons = Array.from(document.querySelectorAll('.timer-buttons button, .convert-button, .recipe-list li, #next-step-btn, #prev-step-btn'));
         
         setInterval(fetchFingerPosition, 100);
     });
@@ -283,11 +403,9 @@
     }
 
     function highlightButton(button) {
-        // 이전에 하이라이트된 버튼이 있고, 그것이 현재 버튼과 다를 경우 하이라이트 제거
         if (currentHighlightedButton && currentHighlightedButton !== button) {
             currentHighlightedButton.classList.remove('highlight');
         }
-        // 새로운 버튼에 하이라이트 추가
         if (button) {
             button.classList.add('highlight');
             currentHighlightedButton = button;
@@ -299,18 +417,15 @@
             pinchDetected = true;
             if (button) {
                 button.click();
-                // 모든 버튼의 하이라이트 스타일 초기화
                 allButtons.forEach(btn => {
                     btn.classList.remove('highlight');
                 });
                 
-                // 클릭된 버튼에만 노란색 테두리 추가
                 button.style.border = '3px solid #ffc107';
                 
-                // 핀치 클릭이 끝난 후 하이라이트 클래스를 다시 추가하여 정상 상태로 복구
                 setTimeout(() => {
                     highlightButton(currentHighlightedButton);
-                    button.style.border = 'none'; // 노란색 테두리 제거
+                    button.style.border = ''; // 노란색 테두리 제거
                 }, 200);
             }
         } else if (!isPinch) {
