@@ -9,7 +9,7 @@ from flask import Flask, render_template, jsonify, request
 import numpy as np
 
 # Flask 서버 설정
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static')
 
 # 현재 손가락 좌표를 저장할 전역 변수
 finger_pos = {
